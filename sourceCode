@@ -1,0 +1,188 @@
+import turtle
+import random
+import tkinter as tk
+import time
+
+
+class Screen:
+    def __init__(self,title="Ping Pong"):
+        self.screen=turtle.Screen()
+        
+        self.screen.update()
+        self.screen.title(title)
+        self.screen.bgcolor("black")
+        self.screen.setup(width=900,height=600)
+        self.screen.tracer(0)
+    def update(self):
+        return self.screen.update()
+
+    def listen(self):
+        return self.screen.listen()
+    def presskey(self,x,y):
+        return self.screen.onkeypress(x,y)
+
+
+
+#runs ping pong once the button is clicked on in the tk menu
+def run_ping():
+    screen = Screen()
+
+    #paddle left
+    paddle_1=turtle.Turtle()
+    paddle_1.speed(0)
+    paddle_1.shape("square")
+    paddle_1.color("red")
+    #shape starts off at 20x20 pixel square
+    paddle_1.shapesize(stretch_wid=5,stretch_len=1)
+    paddle_1.penup()
+    paddle_1.goto(-400,0)
+
+    #paddle right
+    paddle_2=turtle.Turtle()
+    paddle_2.speed(0)
+    paddle_2.shape("square")
+    paddle_2.color("blue")
+    paddle_2.shapesize(stretch_wid=5,stretch_len=1)
+    paddle_2.penup()
+    paddle_2.goto(400,0)
+
+    #score
+    score_1=0
+    score_2=0
+    score= turtle.Turtle()
+    score.speed(0)
+    score.color("white")
+    score.penup()
+    score.hideturtle()
+    score.goto(0,260)
+    score.write("Player 1: 0 vs. Player 2: 0", align = "center", font=("Arial",20, "normal"))
+
+    #ball
+    pong=turtle.Turtle()
+    pong.speed(0)
+    pong.shape("circle")
+    pong.color("yellow")
+    pong.penup()
+    pong.goto(0,0)
+
+    #list of diretions
+    dir_xy=[-2.5,2.5]
+
+    #ball moves by 2.5 pixels pics a random directions from the list
+    pong.dx=random.choice(dir_xy)
+    pong.dy=random.choice(dir_xy)
+
+
+    #lets player interact with the game
+    def pad1up():
+        y = paddle_1.ycor()
+        y+=20
+        paddle_1.sety(y)
+    def pad1down():
+        y = paddle_1.ycor()
+        y-=20
+        paddle_1.sety(y)
+    def pad2up():
+        y = paddle_2.ycor()
+        y+=20
+        paddle_2.sety(y)
+    def pad2down():
+        y = paddle_2.ycor()
+        y-=20
+        paddle_2.sety(y)
+
+    screen.listen()
+    screen.presskey(pad1up, "w")
+    screen.presskey(pad1down, "s")
+    screen.presskey(pad2up, "Up")
+    screen.presskey(pad2down, "Down")
+
+
+    while True:
+        screen.update()
+        #ball movement
+        pong.setx(pong.xcor()+pong.dx)
+        pong.sety(pong.ycor()+pong.dy)
+        #changes the direction once the ball hits the ceiling/floor
+        if pong.ycor()>280:
+            pong.sety(280)
+            pong.dy *= -1
+        
+        if pong.ycor()<-280:
+            pong.sety(-280)
+            pong.dy *= -1
+        #keeps score for player 2
+        if pong.xcor() > 440:
+            pong.goto(0,0)
+            pong.dx *=-1
+            score_1+=1
+            score.clear()
+            score.write("Player 1: {} vs. Player 2: {}".format(score_1,score_2), align = "center", font=("Arial",20, "normal"))
+        #keeps score of the game for player 1
+        if pong.xcor() < -440:
+            pong.goto(0,0)
+            pong.dx *=-1
+            score_2+=1
+            score.clear()
+            score.write("Player 1: {} vs. Player 2: {}".format(score_1,score_2), align = "center", font=("Arial",20, "normal"))
+        #collison box for the players paddles
+        if pong.xcor()> 380 and (pong.ycor() < paddle_2.ycor()+45 and pong.ycor() > paddle_2.ycor()-45):
+            pong.setx(380)
+            pong.dx *=-1
+        if pong.xcor()< -380 and (pong.ycor() < paddle_1.ycor()+50 and pong.ycor() > paddle_1.ycor()-50):
+            pong.setx(-380)
+            pong.dx *=-1
+        #Once a player reaches 10 points they win
+        if score_1 or score_2 == 10:
+                winner= turtle.Turtle()
+                winner.speed(0)
+                winner.color("white")
+                winner.penup()
+                winner.hideturtle()
+                winner.goto(0,0)
+                if score_1==10:
+                    winner.write("PLAYER 1 WON!", align = "center", font=("Arial",26, "normal"))
+                    time.sleep(8)
+                    exit()
+                elif score_2==10:
+                    winner.write("PLAYER 2 WON!", align = "center", font=("Arial",26, "normal"))
+                    time.sleep(8)
+                    exit()
+#opens and reads the file once the instruction button is called 
+def instructions():
+    filename="instructions.txt"
+    file=open(filename,"r")
+    for line in file:
+        print(line)
+    
+    
+    
+
+#writes the instuction 
+info = open("instructions.txt","w")
+info.write("The name of the game is ping pong!\n")
+info.write("Ping pong was one of the earliest electronic games, but is still popular today\n")
+info.write("The way you play this game is very simple:\n")
+info.write("\n")
+info.write("*Player one uses the [w] and [s] keys(case sensitive)\n")
+info.write("*Player two uses the [Up] and [Down] arrow keys to reflect the ball\n")
+info.write("*The game starts as soon as you press play, and the first serve is random\n")
+info.write("*A player that manages to get the ball past the opponent scores a point\n")
+info.write("*After scoring a point the ball will start heading towards the player that scored\n")
+info.write("*First player to score 10 points wins!\n")
+info.close()
+
+
+#this is where all the buttons rest
+menu=tk.Tk()
+
+play_but=tk.Button(menu, text="PLAY",command=run_ping)
+play_but.pack()
+
+intr_but=tk.Button(menu,text="Intrustions",command=instructions)
+intr_but.pack()
+
+quit_but=tk.Button(menu,text="Quit",command=menu.destroy)
+quit_but.pack()
+
+tk.mainloop()
